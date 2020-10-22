@@ -11,6 +11,12 @@ int getIndex(int x, int y, int width){
 	return value;
 }
 
+int normalize(int max, int min, int value){
+	float newValue =(float) (value - min) / (max-min);
+	//printf("New: %f", newValue);
+	return newValue *255;
+}
+
 
 
 //TODO: tek boyutlu array icin get(i,j) tipi fonksiyon yaz. 
@@ -72,7 +78,7 @@ int main() {
    i = 0;
     while(fgets(buffer, 200, fp)) { //Header bilgilerini alan dongu.
 	    int limit = 2;	
-    	//printf("%s", buffer);
+    	printf("%s", buffer);
     	strcpy(firstLines[i], buffer);
     	i++;
     	if(buffer[0] == '#'){
@@ -156,50 +162,122 @@ int main() {
 	    sum+= mat[tmp]   * yMatrix[2][1];
 	    tmp = getIndex((i+1),(j+1), width);
 	    sum+= mat[tmp] * yMatrix[2][2];
-	    if(sum > 255){
-	    	int tmp = getIndex((i),(j), width);	    	
-		    mat[tmp]= 255;	  	
-		}else if(sum <0){
-			int tmp = getIndex((i),(j), width);	    	
-		    mat[tmp]= 0;	  
-		}else{
-			int tmp = getIndex((i),(j), width);	    	
-		    mat[tmp]= sum;	  
-		}
+	    mat[tmp] = sum;
 	  }
   }  
+  
+  //Min Max normalization
+  
+  int max = 0;
+  for(i=1; i<width*height; i++){
+  	if(mat[i] > mat[max]){
+  		max = i;
+	  }
+  }
+  int min = 0;
+  for(i=1; i<width*height; i++){
+  	if(mat[i] < mat[min]){
+  		min = i;
+	  }
+  }  
+  
+  for(i=0; i< width*height; i++){
+  	mat[i] = normalize(mat[max], mat[min], mat[i]);
+  }
+  
+  
+  fclose(fp);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   //TODO:  dosyaya yazma islemini hallet!
   ///////////////
   
+  printf("\nKendi Dosyamiz\n");
   FILE *fp2;
-  /*
-  fp2 = fopen("ilkPgm.pgm","w+");
+  fp2 = fopen("ilkPgm2.pgm","w+");
   
   for(i=0; i<4; i++){
   	if(firstLines[i][0]=='#'){
   		continue;
-	  }
-	fwrite (firstLines[i] , sizeof(firstLines[i]), sizeof(firstLines[i]), fp2);
+	  }	  
+	fprintf(fp2,firstLines[i]);  
+	//fwrite (firstLines[i] , sizeof(firstLines[i]), sizeof(firstLines[i, fp2);
 	}	
-	fclose(fp2);*/
+	fclose(fp2);
+
+
   
-  /*
-  unsigned char iBuffer[width] = "selam ilker\n";
-  fp2 = fopen("ilkPgm.pgm", "wb+");
-  for(i=0; i<height; i++){
-  	//int iBuffer[width];
+  //unsigned char iBuffer[20] = "selam ilker\n";
+  fp2 = fopen("ilkPgm2.pgm", "ab");
+  
+  for(i=0; i< width*height; i++){
+	  fwrite (&mat[i] , sizeof(unsigned char), 1, fp2); 
+  	
+  }
+
+ /* for(i=0; i<height; i++){
+  	int iBuffer[width];
 	for(j=0; j<width; j++){
 		int tmp = getIndex((i),(j), width);
-		//iBuffer[j] = mat[tmp];
-	}  
-	fwrite (&iBuffer , sizeof(iBuffer), sizeof(iBuffer), fp2);
-  }
+		iBuffer[j] = mat[tmp];
+	}	 
+	fwrite (iBuffer , sizeof(iBuffer), sizeof(iBuffer), fp2); 
+  } */
+
+
 
   
   fclose (fp2);
-*/
+
+
+	
+   fp = fopen("ilkPgm2.pgm", "rb");
+   printf("Opening the file test.c in read mode\n");
+
+   if (fp == NULL) {
+     printf("Could not open file test.c");
+     return 1;
+   }
+   printf("Reading the file test.c\n");
+   
+    i = 0;
+    while(fgets(buffer, 80, fp)) { //Header bilgilerini alan dongu.
+	    int limit = 2;	
+    	printf("%s", buffer);
+    	i++;
+    	if(buffer[0] == '#'){
+    		printf("Yorum var!");
+    		limit++;
+		}
+    	if(i>limit){
+    		break;
+		}
+	}
+
+	
+  unsigned char buffer3[80];
   
+  j = 0;
+  while(fread(&buffer3 ,sizeof(buffer3),1,fp) > 0){
+  	  for(i=0; i< 80; i++){
+	  	//printf(":%d: ", buffer3[i]); // prints a series of bytes
+	  	j++;
+  		}
+  		if(j>3){
+  			//break;
+		  }
+  } 
+  
+  fclose(fp);
   
   
    
