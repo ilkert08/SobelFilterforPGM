@@ -12,9 +12,10 @@ int getIndex(int x, int y, int width){
 }
 
 int normalize(int max, int min, int value){
-	float newValue =(float) (value - min) / (max-min);
-	//printf("New: %f", newValue);
-	return newValue *255;
+	float newValue =(float) (value - min) /(float) (max-min);
+	//printf("Max: %d , Min: %d, Val: %d",max ,min, value);
+	//printf(" New: %d\n", (int)(newValue * 255));
+	return (int)(newValue * 255);
 }
 
 
@@ -34,10 +35,7 @@ int main() {
     { -2, 0, 2 },
     { -1, 0, 1 }
   };
-
-
-
-
+  
 
     /*
     //Tek boyutlu arrayde 2 boyutlu erisim icin indexler. 
@@ -47,14 +45,13 @@ int main() {
         x-1         x      x+1
         x+y-1     x+y    x+y+1      
     */
-    /*
-    for(i=0; i< 640*480; i++){
-    	int arr[9] = {(i - width - 1), (i - width), (i - width + 1), (i-1),  (i), (i + 1), (i + width - 1), (i+ width), (i + width + 1});
-    	
-	}*/
-	
 	
    int i, j, k;
+   for(i=0; i<3; i++){
+   	for(j=0; j<3;j++){
+   		printf("%d ", xMatrix[i][j]);
+	   }
+   }
    int width;
    int height;
     //printf("selam: %d", imgMatrix[400][350]);
@@ -64,7 +61,7 @@ int main() {
    
    FILE * fp;
    int lineCount = 0;
-   fp = fopen("bird.pgm", "rb");
+   fp = fopen("horse.pgm", "rb");
    printf("Opening the file test.c in read mode\n");
 
    if (fp == NULL) {
@@ -95,11 +92,11 @@ int main() {
    		const char s[2] = " ";
   		char *token;
  		  token = strtok(str, s);
-   		  width = atoi(token); //genisligin alinmasi
+ 		  width = atoi(token); //yuksekligin alinmasi
    		  printf("%s", token);
 		  token = strtok(NULL, s);
+		  height = atoi(token); //genisligin alinmasi
 		  printf("%s", token);
-		  height = atoi(token); //yuksekligin alinmasi
   		 }
 	 else{	
 		  char str[20];
@@ -108,20 +105,28 @@ int main() {
    	      const char s[2] = " ";
   		  char *token;
  		  token = strtok(str, s);
-   		  width = atoi(token); //genisligin alinmasi
+ 		  width = atoi(token); //yuksekligin alinmasi	
    		  printf("%s", token);
 		  token = strtok(NULL, s);
 		  printf("%s", token);
-		  height = atoi(token); //yuksekligin alinmasi			  		 	
+    	  height = atoi(token); //genisligin alinmasi
+
+		  		  		 	
 		   }
 		   
 	for(i=0; i<4; i++){
-		printf("i: %d %s\n", i, firstLines[i]);
+		printf("i: %d .%s.\n", i, firstLines[i]);
 	}	   
 	  	
 	  	
   //int mat[width][height] = {0};
   int *mat = (int *)malloc((width)*(height) * sizeof(int));
+  int *mat2 = (int *)malloc((width)*(height) * sizeof(int));
+  for(i=0; i<height; i++){
+  	for(j=0; j< width; j++){
+  		mat2[getIndex(i, j, width)] = 0;
+	  }
+  }
 
   unsigned char buffer2[80];
   int buff;
@@ -130,8 +135,8 @@ int main() {
   while(fread(&buffer2 ,sizeof(buffer2),1,fp) > 0){
   	  for(i=0; i< 80; i++){
 	  	//printf(":%d: ", buffer2[i]); // prints a series of bytes
-	  	int tmp = getIndex((j / width),(j % width), width);
-	  	mat[tmp] = buffer2[i];
+	  	//int tmp = getIndex((j / width),(j % width), width);
+	  	mat[j] = buffer2[i];
 	  	j++;
   		}
   }
@@ -140,67 +145,100 @@ int main() {
   
   
   int sum = 0;
+  int sum2 = 0;
+  bool check = false;
   //Y padding
-  
+  k = getIndex(1,1,width);
   for(i=1; i<height-1; i++){
   	for(j=1; j< width-1; j++){  
+  	    sum  = 0;
+  	    sum2 = 0;
 	    int tmp = getIndex((i-1),(j-1), width);	    
 	    sum+= mat[tmp] * yMatrix[0][0];
+	    sum2+= mat[tmp] * xMatrix[0][0];
 	    tmp = getIndex((i-1),(j), width);
 	    sum+= mat[tmp]  * yMatrix[0][1];
-	    tmp = getIndex((i+1),(j-1), width);
+	    sum2+= mat[tmp]  * xMatrix[0][1];
+		tmp = getIndex((i-1),(j+1), width);
 	    sum+= mat[tmp] * yMatrix[0][2];
+	    sum2+= mat[tmp]  * xMatrix[0][2];
 	    tmp = getIndex((i),(j-1), width);
 	    sum+= mat[tmp]  * yMatrix[1][0];
+	    sum2+= mat[tmp]  * xMatrix[1][0];
 	    tmp = getIndex((i),(j), width);
 	    sum+= mat[tmp]     * yMatrix[1][1];
+	    sum2+= mat[tmp]     * xMatrix[1][1];
 	    tmp = getIndex((i),(j+1), width);
 	    sum+= mat[tmp]   * yMatrix[1][2];
-	    tmp = getIndex((i+1),(j-1), width);
+	    sum2+= mat[tmp]   * xMatrix[1][2];
+		tmp = getIndex((i+1),(j-1), width);
 	    sum+= mat[tmp] * yMatrix[2][0];
-	    tmp = getIndex((i+1),(j), width);
+	    sum2+= mat[tmp] * xMatrix[2][0];
+		tmp = getIndex((i+1),(j), width);
 	    sum+= mat[tmp]   * yMatrix[2][1];
+	    sum2+= mat[tmp]   * xMatrix[2][1];
 	    tmp = getIndex((i+1),(j+1), width);
 	    sum+= mat[tmp] * yMatrix[2][2];
-	    mat[tmp] = sum;
-	  }
+	    sum2+= mat[tmp] * xMatrix[2][2];
+	    int newValue = (int) sqrt(pow(sum,2)+pow(sum2,2));
+		tmp = getIndex((i),(j), width);
+	    mat2[tmp] = newValue;
+	  }	  
   }  
+ /* SILME TEK TEK X VE Y BAKARKEN LAZIM OLACAK 
+    sum = 0;
+    for(i=1; i<height-1; i++){
+  		for(j=1; j< width-1; j++){  
+	    	int tmp = getIndex((i-1),(j-1), width);	    
+		    sum+= mat[tmp] * xMatrix[0][0];
+		    tmp = getIndex((i-1),(j), width);
+		    sum+= mat[tmp]  * xMatrix[0][1];
+		    tmp = getIndex((i+1),(j-1), width);
+		    sum+= mat[tmp] * xMatrix[0][2];
+		    tmp = getIndex((i),(j-1), width);
+		    sum+= mat[tmp]  * xMatrix[1][0];
+		    tmp = getIndex((i),(j), width);
+		    sum+= mat[tmp]     * xMatrix[1][1];
+		    tmp = getIndex((i),(j+1), width);
+		    sum+= mat[tmp]   * xMatrix[1][2];
+		    tmp = getIndex((i+1),(j-1), width);
+		    sum+= mat[tmp] * xMatrix[2][0];
+		    tmp = getIndex((i+1),(j), width);
+		    sum+= mat[tmp]   * xMatrix[2][1];
+		    tmp = getIndex((i+1),(j+1), width);
+		    sum+= mat[tmp] * xMatrix[2][2];
+		    mat[tmp] = sum;
+	  }
+  }  */
   
   //Min Max normalization
   
   int max = 0;
   for(i=1; i<width*height; i++){
-  	if(mat[i] > mat[max]){
+  	if(mat2[i] > mat2[max]){
   		max = i;
 	  }
   }
   int min = 0;
   for(i=1; i<width*height; i++){
-  	if(mat[i] < mat[min]){
+  	if(mat2[i] < mat2[min]){
   		min = i;
 	  }
   }  
   
-  for(i=0; i< width*height; i++){
-  	mat[i] = normalize(mat[max], mat[min], mat[i]);
+  for(i=1; i< (width-1)*(height-1); i++){
+  	int val = normalize(mat2[max], mat2[min], mat2[i]);
+  	if(val > 255){
+  		//printf("B: %d",val);
+	    val  = 255;
+	}
+  	//mat2[i] = val; 
   }
   
   
   fclose(fp);
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  //TODO:  dosyaya yazma islemini hallet!
-  ///////////////
-  
+    
   printf("\nKendi Dosyamiz\n");
   FILE *fp2;
   fp2 = fopen("ilkPgm2.pgm","w+");
@@ -210,79 +248,21 @@ int main() {
   		continue;
 	  }	  
 	fprintf(fp2,firstLines[i]);  
-	//fwrite (firstLines[i] , sizeof(firstLines[i]), sizeof(firstLines[i, fp2);
 	}	
 	fclose(fp2);
 
 
-  
-  //unsigned char iBuffer[20] = "selam ilker\n";
-  fp2 = fopen("ilkPgm2.pgm", "ab");
-  
+   fp2 = fopen("ilkPgm2.pgm", "ab");
+  unsigned char ch = '\n';
   for(i=0; i< width*height; i++){
-	  fwrite (&mat[i] , sizeof(unsigned char), 1, fp2); 
-  	
+	  fwrite (&mat2[i] , sizeof(unsigned char), 1, fp2); 
+	  if(i % width == 0){
+	  	//fwrite (&ch , sizeof(unsigned char), 1, fp2); 
+	  }
   }
-
- /* for(i=0; i<height; i++){
-  	int iBuffer[width];
-	for(j=0; j<width; j++){
-		int tmp = getIndex((i),(j), width);
-		iBuffer[j] = mat[tmp];
-	}	 
-	fwrite (iBuffer , sizeof(iBuffer), sizeof(iBuffer), fp2); 
-  } */
-
-
 
   
   fclose (fp2);
-
-
-	
-   fp = fopen("ilkPgm2.pgm", "rb");
-   printf("Opening the file test.c in read mode\n");
-
-   if (fp == NULL) {
-     printf("Could not open file test.c");
-     return 1;
-   }
-   printf("Reading the file test.c\n");
-   
-    i = 0;
-    while(fgets(buffer, 80, fp)) { //Header bilgilerini alan dongu.
-	    int limit = 2;	
-    	printf("%s", buffer);
-    	i++;
-    	if(buffer[0] == '#'){
-    		printf("Yorum var!");
-    		limit++;
-		}
-    	if(i>limit){
-    		break;
-		}
-	}
-
-	
-  unsigned char buffer3[80];
-  
-  j = 0;
-  while(fread(&buffer3 ,sizeof(buffer3),1,fp) > 0){
-  	  for(i=0; i< 80; i++){
-	  	//printf(":%d: ", buffer3[i]); // prints a series of bytes
-	  	j++;
-  		}
-  		if(j>3){
-  			//break;
-		  }
-  } 
-  
-  fclose(fp);
-  
-  
-   
-	
-    
 
 	return 0; 
 }
